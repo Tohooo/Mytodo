@@ -1,0 +1,63 @@
+{% extends 'base.html' %} {% block content %}
+<h1 class="text-center">Daftar Postingan</h1>
+
+<!-- Hanya tampilkan tombol Create Post dan Logout jika user sudah login -->
+{% if user.is_authenticated %}
+<div class="d-flex justify-content-between mb-3">
+  <a href="{% url 'create_post' %}" class="btn btn-success">Create Post</a>
+  <form method="POST" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Logout</button>
+  </form>
+</div>
+{% endif %} {% for post_info in posts_with_likes %}
+<div class="card mb-3">
+  <div class="card-body">
+    <h5 class="card-title">{{ post_info.post.title }}</h5>
+    <h6 class="card-subtitle mb-2 text-muted">
+      Ditulis oleh {{ post_info.post.author.username }} pada
+      {{post_info.post.created_at }}
+    </h6>
+    <p class="card-text">{{ post_info.post.content|truncatewords:20 }}</p>
+    <p class="card-text">
+      <small>{{ post_info.comment_count }} Komentar</small>
+    </p>
+
+    <!-- Like Button -->
+    <div class="d-flex align-items-center">
+      {% if user.is_authenticated %} {% if post_info.user_has_liked %}
+      <a
+        href="{% url 'unlike_post' post_info.post.pk %}"
+        class="btn btn-light text-danger mr-2"
+      >
+        <i class="bi bi-heart-fill"></i>
+      </a>
+      {% else %}
+      <a
+        href="{% url 'like_post' post_info.post.pk %}"
+        class="btn btn-light text-secondary mr-2"
+      >
+        <i class="bi bi-heart"></i>
+      </a>
+      {% endif %} {% else %}
+      <p>You must <a href="{% url 'login' %}">login</a> to like this post.</p>
+      {% endif %}
+
+      <p class="mb-0"><small>{{ post_info.like_count }}</small></p>
+    </div>
+
+    {% if user == post_info.post.author %}
+    <a href="{% url 'edit_post' post_info.post.pk %}" class="btn btn-primary"
+      >Edit</a
+    >
+    <a href="{% url 'delete_post' post_info.post.pk %}" class="btn btn-danger"
+      >Delete</a
+    >
+    {% endif %}
+
+    <a href="{% url 'post_detail' post_info.post.pk %}" class="btn btn-info"
+      >Komentar</a
+    >
+  </div>
+</div>
+{% endfor %} {% endblock %}
